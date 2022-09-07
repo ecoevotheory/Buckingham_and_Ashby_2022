@@ -1,13 +1,12 @@
 function [resJssvalue,resAssvalue] = singstrat_finder_analytical(resJlowerbound,resJupperbound,resAlowerbound,resAupperbound,c1g,c2g,c1a,c2a,a0,g0,beta0,h,f,alpha,version)
 
-% This function finds the singular strategies analytically.
+% This function finds singular strategies analytically.
 
+% Set up variables, parameters and vectors:
 syms SJ SA IJ IA resJ resA resJm resAn bJ bA
-
 eps=1e-5;
 resJssvalue=[];
 resAssvalue=[];
-
 betaJ=beta0*(1-resJ);
 betaA=beta0*(1-resA);
 
@@ -140,7 +139,7 @@ elseif version==6
 
 end
             
-% State the system:
+% State the ecological system:
 eq1=a*(1-SJ-SA-IJ-IA)*(SA+f*IA) -(bJ+g+betaJ*(h*IJ+IA))*SJ;
 eq2=g*SJ-(bA+betaA*(h*IJ+IA))*SA;
 eq3=betaJ*(h*IJ+IA)*SJ-(bJ+g+alpha)*IJ;
@@ -152,7 +151,7 @@ fitgradAworking(resJ,resAn,IJ,IA,SJ,SA)=diff(wA,resAn);
 fitgradJagain(resA,resJ,IJ,IA,SJ,SA)=subs(fitgradJworking,resJm,resJ);
 fitgradAagain(resA,resJ,IJ,IA,SJ,SA)=subs(fitgradAworking,resAn,resA);
 
-% Find the roots of the fitness gradients:
+% Find the roots of the fitness gradients and the ecological system:
 overallsol=vpasolve([eq1,eq2,eq3,eq4,fitgradJagain,fitgradAagain],[resJ,resA,SJ,SA,IJ,IA],[resJlowerbound resJupperbound;resAlowerbound resAupperbound; eps inf; eps inf; eps inf; eps inf]);
 
 % This gives the singular strategy:

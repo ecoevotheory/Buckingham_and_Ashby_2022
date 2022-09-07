@@ -3,13 +3,12 @@ function [Jout,Aout]=sim_inout_function(resJstart,resAstart,version,a0,g0,c1a,c2
 % This function determines only the endpoints of an evolutionary
 % simulation.
 
-%% Section 1: Set up vectors and parameters
-
 if version~=1 && version~=2 && version~=3 && version~=4 && version~=5 && version~=6
     disp('Please choose one version of the model')
     return
 end
 
+% Set up parameters and vectors to use later:
 t_max=100;
 resJmin=0;
 resJmax=1;
@@ -17,9 +16,11 @@ resAmin=0;
 resAmax=1;
 res0=51;
 nevol=1000;
-
 RESJ=[];
 RESA=[];
+resJmutationprob=0.5;
+doneyet=0;
+evotimesteps=0;
 
 % Initial conditions:
 strain_totalJ = 1;
@@ -67,18 +68,12 @@ resA_start = ResA(initialA);
 indexJ_start = initialJ;
 indexA_start = initialA;
 
-%% Section 2: Allow traits to evolve
-
-resJmutationprob=0.5;
-doneyet=0;
-evotimesteps=0;
 
 % Allow traits to evolve until they reach an evolutionary attractor:
 while doneyet==0
     
     % Run an evolutionary simulation:
-    [resJ_start,resA_start,init_pop,strain_totalJ,strain_totalA,indexJ_start,indexA_start,RESJnew,RESAnew,~,~,~,~,~,~] = simulation_in_steps_function(t_max,a0,g0,c1a,c2a,c1g,c2g,beta0,alpha,resJmin,resJmax,resJ_start,resAmin,resAmax,resA_start,h,f,resJmutationprob,init_pop,strain_totalJ,strain_totalA,indexJ_start,indexA_start,res0,nevol,version);
-    
+    [resJ_start,resA_start,init_pop,strain_totalJ,strain_totalA,indexJ_start,indexA_start,RESJnew,RESAnew,~,~] = simulation_function(t_max,a0,g0,c1a,c2a,c1g,c2g,beta0,alpha,resJmin,resJmax,resJ_start,resAmin,resAmax,resA_start,h,f,resJmutationprob,init_pop,strain_totalJ,strain_totalA,indexJ_start,indexA_start,res0,nevol,version);
     RESJlengthold=length(RESJ);
     RESAlengthold=length(RESA);
     RESJagain=NaN(RESJlengthold+length(RESJnew),res0);
@@ -95,7 +90,6 @@ while doneyet==0
     for i=1:length(RESAnew)
         RESAagain(RESAlengthold+i,:)=RESAnew(i,:);
     end
-    
     RESJ=RESJagain;
     RESA=RESAagain;
     
@@ -112,12 +106,17 @@ while doneyet==0
         Jout=ResJ(locsJ-1);
         Aout=ResA(locsA-1);
     else
+        % The output take the impossible value of 5 if branching has
+        % occurred:
         Jout=5;
         Aout=5;
     end
     
     % Determine whether the trajectories have reached an evolutionary
-    % attractor:
+    % attractor. We know that, for the phase plane which this code is being
+    % applied to, the region below and to the left of (0.7,0.7) is in one
+    % basin of attraction and the region above and to the right of
+    % (0.9,0.9) is in the other. 
     if Jout<0.7 && Aout<0.7
         doneyet=1;
     elseif 0.9<Jout && 0.9<Aout

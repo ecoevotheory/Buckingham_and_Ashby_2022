@@ -1,8 +1,8 @@
 /***********************************************************************************************************
- * [t,SJ,SA,IJ,IA,EQFLAG] = plantmodel_function_v3_mex(t_max,a0,g0,c1a,c2a,c1g,c2g,beta0,alpha,betaJ,betaA,hval,f,eqtol,init_pop,strain_totalJ,strain_totalA)
+ * [t,SJ,SA,IJ,IA,EQFLAG] = eco_dynamics_function_v6(t_max,a0,g0,c1a,c2a,c1g,c2g,beta0,alpha,betaJ,betaA,hval,f,eqtol,init_pop,strain_totalJ,strain_totalA)
  ***********************************************************************************************************/
 
-/* g0=g, c1a=c1 for adult mortality, c1g=c1 for juvenile trade-off with reproduction */
+/* Compile in Matlab using mex eco_dynamics_function_v6.c */
 
 #include <mex.h>
 #include <math.h>
@@ -645,9 +645,9 @@ void dynamic(double *SJ, double *SA, double *IJ, double *IA,  double *DSJDT, dou
     /* ODEs */
     for(i=0;i<p->strain_totalJ;i++){
 	for (j=0; j<p->strain_totalA; j++){
-	    DSJDT[i+j*p->strain_totalJ] = p->a0*(1-p->c1a*(1-exp(-p->c2a*betaA[j]))/(1-exp(-p->c2a)))*(1-N)*(SA[i+j*p->strain_totalJ]+p->f*IA[i+j*p->strain_totalJ])-((1+p->c1g*(1-exp(-p->c2g*betaJ[i]))/(1-exp(-p->c2g)))+p->g0+p->beta0*(1-betaJ[i])*allinfecteds)*SJ[i+j*p->strain_totalJ];
+	    DSJDT[i+j*p->strain_totalJ] = p->a0*(1-p->c1g*(1-exp(-p->c2g*betaJ[i]))/(1-exp(-p->c2g)))*(1-p->c1a*(1-exp(-p->c2a*betaA[j]))/(1-exp(-p->c2a)))*(1-N)*(SA[i+j*p->strain_totalJ]+p->f*IA[i+j*p->strain_totalJ])-(1+p->g0+p->beta0*(1-betaJ[i])*allinfecteds)*SJ[i+j*p->strain_totalJ];
             DSADT[i+j*p->strain_totalJ] = p->g0*SJ[i+j*p->strain_totalJ]-(1+p->beta0*(1-betaA[j])*allinfecteds)*SA[i+j*p->strain_totalJ];
-	    DIJDT[i+j*p->strain_totalJ] = p->beta0*(1-betaJ[i])*allinfecteds*SJ[i+j*p->strain_totalJ] -(p->g0+p->alpha+(1+p->c1g*(1-exp(-p->c2g*betaJ[i]))/(1-exp(-p->c2g))))*IJ[i+j*p->strain_totalJ];
+	    DIJDT[i+j*p->strain_totalJ] = p->beta0*(1-betaJ[i])*allinfecteds*SJ[i+j*p->strain_totalJ] -(p->g0+1+p->alpha)*IJ[i+j*p->strain_totalJ];
 	    DIADT[i+j*p->strain_totalJ] = p->g0*IJ[i+j*p->strain_totalJ]+p->beta0*(1-betaA[j])*allinfecteds*SA[i+j*p->strain_totalJ]-(1+p->alpha)*IA[i+j*p->strain_totalJ];
 	}
     }

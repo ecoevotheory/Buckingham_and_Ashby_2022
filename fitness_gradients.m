@@ -10,7 +10,8 @@ resJvalvec = linspace(startJ,finJ,SSres);
 resAvalvec = linspace(startA,finA,SSres);
 R0counter=0;
 
-% For each value of adult and juvenile resistance...
+% For each value of adult and juvenile resistance we determine the fitness
+% gradients:
 for j=1:SSres
     for k=1:SSres
         resJval=resJvalvec(j);
@@ -91,12 +92,12 @@ for j=1:SSres
                     fitgradAval(j,k)=NaN;
                 end
                 
-            else % If there is no disease
-                fitgradJval(j,k)=-1; % Resistance should decrease
+            else % If there is no disease then resistance should always decrease
+                fitgradJval(j,k)=-1;
                 fitgradAval(j,k)=-1;
                 R0counter=R0counter+1;
             end
-        else % If the host population is not viable
+        else % If the host population is not viable then there are no hosts to exhibit the trait and hence no fitness gradients
             fitgradJval(j,k)=NaN;
             fitgradAval(j,k)=NaN;
         end

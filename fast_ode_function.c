@@ -1,8 +1,8 @@
 /*****************************************************************************************************
- * [t,x] = ode_fast(t_max,a,hval,f,g,bJ,bA,betaJ,betaA,alpha,initvec)
- *
- * Compile in Matlab using mex ode_fast.c
+ * [t,x] = fast_ode_function(t_max,a,hval,f,g,bJ,bA,betaJ,betaA,alpha,initvec)
  ****************************************************************************************************/
+
+/* Compile in Matlab using mex fast_ode_function.c */
 
 #include <mex.h>
 #include <math.h>

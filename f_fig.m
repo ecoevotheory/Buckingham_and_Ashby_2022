@@ -1,5 +1,3 @@
-function effect_of_f_figure
-
 % This code creates six sub-figures showing the effect of varying the 
 % sterility virulence, 1-f, for different combinations of trade-offs.
 
@@ -30,19 +28,29 @@ str{6}='J: reproduction, A: reproduction';
 ORDER = [1,5,6,4,2,3];
 labs = {'A','B','C','D','E','F'};
 
+% Parameter values:
+a0=5;
+g0=1; 
+c1a=0.5;
+c2a=-3;
+c1g=0.5;
+c2g=-3;
+beta0=8;
+alpha=0;
+
 for i=1:6
     version = ORDER(i);
     
     % The function 'f_fig_data' determines the singular strategies and
     % disease prevalence for a variety of values of the sterility
-    % virulence, given certain parameters which are defined inside the
-    % function.
-    [vec,Jplotvec,Aplotvec,~,~,disprevvec,~,~]=f_fig_data(version);
+    % virulence.
+    [vec,Jplotvec,Aplotvec,disprevvec,totalpopvec]=f_fig_data(version,a0,g0,c1a,c2a,c1g,c2g,alpha,beta0);
+    diseasedensity=disprevvec.*totalpopvec;
     
     % Plot the data:
     subplot(2,3,i)
     hold on
-    
+
     % The left-hand axis will show the level of resistance at the singular
     % strategies:
     yyaxis left
@@ -52,16 +60,23 @@ for i=1:6
     ax.YColor='k';
     ylim([0,1])
     
-    % The right-hand axis will show the proportion of hosts which are
-    % infected:
+    % The right-hand axis will show the total population density and the
+    % density of infected hosts.
     yyaxis right
-    plot(1-vec,disprevvec,':','linewidth',3,'color',[0.8,0.8,0.8])
+    plot(1-vec,totalpopvec,':','linewidth',3,'color',[0.8,0.8,0.8])
+    hold on
+    plot(1-vec,diseasedensity,'-','linewidth',3,'color',[0.95,0.95,0.95])
     set(gca,'xtick',0:0.2:1);
     set(gca,'ytick',0:0.2:1);
     ax=gca;
     ax.YColor=[0.5,0.5,0.5];
     ylim([0,1])
     box on
+
+    % We want the resistance curves to be on top:
+    yyaxis right
+    plot(1-vec,Jplotvec,'r-','linewidth',3)
+    plot(1-vec,Aplotvec,'b--','linewidth',3)
 
     % Determine and label any regions where bistability occurs:
     bistability_boundaryJ=find(~isnan(Jplotvec(:,1).*Jplotvec(:,2)),1);
@@ -123,19 +138,17 @@ for i=1:6
         yyaxis left
         ylab = ylabel('Resistance','interpreter','latex','fontsize',18);
         temp = get(ylab,'position');
-        temp(2) = temp(2) + 0.5;
+        temp(2) = temp(2) + 0.7;
         temp(1) = temp(1) ;
         set(ylab,'position',temp);
     elseif (i==6)
         yyaxis right
-        ylab=ylabel('Proportion infected','interpreter','latex','fontsize',18);
+        ylab=ylabel('Population density','interpreter','latex','fontsize',18);
         temp = get(ylab,'position');
         temp(2) = temp(2) + 0.7;
         set(ylab,'position',temp);
     elseif(i==5)
-        xlabel('Fecundity virulence, $1-f$','interpreter','latex','fontsize',16)
+        xlabel('Sterility virulence, $1-f$','interpreter','latex','fontsize',16)
     end
     
-end
-
 end

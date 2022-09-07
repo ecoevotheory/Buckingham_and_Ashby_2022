@@ -1,15 +1,15 @@
-function [trajJ,trajA]=sim_traj_function(resJstart,resAstart,version,a0,g0,c1a,c2a,c1g,c2g,f,h,alpha,beta0)
+function [trajJ,trajA]=sim_traj_function(resJstart,resAstart,version,a0,g0,c1a,c2a,c1g,c2g,f,h,alpha,beta0,panel)
 
 % This function simulates an evolutionary trajectory from a given starting
 % point to an evolutionary attractor.
 
-%% Section 1: Set up vectors and parameters
 
 if version~=1 && version~=2 && version~=3 && version~=4 && version~=5 && version~=6
     disp('Please choose one version of the model')
     return
 end
 
+% Set up parameters and vectors to use later:
 t_max=100;
 resJmin=0;
 resJmax=1;
@@ -17,9 +17,11 @@ resAmin=0;
 resAmax=1;
 res0=51;
 nevol=500;
-
 RESJ=[];
 RESA=[];
+resJmutationprob=0.5;
+doneyet=0;
+evotimesteps=0;
 
 % Initial conditions:
 strain_totalJ = 1;
@@ -67,18 +69,12 @@ resA_start = ResA(initialA);
 indexJ_start = initialJ;
 indexA_start = initialA;
 
-%% Section 2: Allow traits to coevolve
-
-resJmutationprob=0.5;
-doneyet=0;
-evotimesteps=0;
 
 % Let the resistance traits evolve until they get close to an attractor:
 while doneyet==0
     
     % Run the evolutionary simulation:
-    [resJ_start,resA_start,init_pop,strain_totalJ,strain_totalA,indexJ_start,indexA_start,RESJnew,RESAnew,~,~,~,~,~,~] = simulation_in_steps_function(t_max,a0,g0,c1a,c2a,c1g,c2g,beta0,alpha,resJmin,resJmax,resJ_start,resAmin,resAmax,resA_start,h,f,resJmutationprob,init_pop,strain_totalJ,strain_totalA,indexJ_start,indexA_start,res0,nevol,version);
-    
+    [resJ_start,resA_start,init_pop,strain_totalJ,strain_totalA,indexJ_start,indexA_start,RESJnew,RESAnew,~,~] = simulation_function(t_max,a0,g0,c1a,c2a,c1g,c2g,beta0,alpha,resJmin,resJmax,resJ_start,resAmin,resAmax,resA_start,h,f,resJmutationprob,init_pop,strain_totalJ,strain_totalA,indexJ_start,indexA_start,res0,nevol,version);
     RESJlengthold=length(RESJ);
     RESAlengthold=length(RESA);
     RESJagain=NaN(RESJlengthold+length(RESJnew),res0);
@@ -95,7 +91,6 @@ while doneyet==0
     for i=1:length(RESAnew)
         RESAagain(RESAlengthold+i,:)=RESAnew(i,:);
     end
-    
     RESJ=RESJagain;
     RESA=RESAagain;
     
@@ -112,19 +107,31 @@ while doneyet==0
         Jout=ResJ(locsJ-1);
         Aout=ResA(locsA-1);
     else
+        % We assign the impossible value of 5 if there has been branching
         Jout=5;
         Aout=5;
     end
     
-    % Determine whether the trajectories have reached an attractor:
-    if Jout<0.05 && Aout<0.05
-        doneyet=1;
-    elseif 0.95<Jout && 0.95<Aout
-        doneyet=1;
-    elseif evotimesteps>50000
-        doneyet=1;
+    % Determine whether the trajectories have reached an attractor (we
+    % already know that the only attractor in our first phase plane is at
+    % (0.6,0.49) and that the attractors in our second phase plane are at
+    % (0,0) and (1,1). 
+    if panel==1
+        if 0.48<=Aout && Aout<=0.52 && 0.6<=Jout && Jout<=0.62
+            doneyet=1;
+        elseif evotimesteps>50000
+            doneyet=1;
+        end
+    elseif panel==2
+        if Jout<0.05 && Aout<0.05
+            doneyet=1;
+        elseif 0.95<Jout && 0.95<Aout
+            doneyet=1;
+        elseif evotimesteps>50000
+            doneyet=1;
+        end
     end
-    
+ 
     evotimesteps=evotimesteps+nevol;
 
 end

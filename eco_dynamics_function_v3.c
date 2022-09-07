@@ -1,8 +1,8 @@
 /***********************************************************************************************************
- * [t,SJ,SA,IJ,IA,EQFLAG] = plantmodel_function_v3_mex(t_max,a0,g0,c1a,c2a,c1g,c2g,beta0,alpha,betaJ,betaA,hval,f,eqtol,init_pop,strain_totalJ,strain_totalA)
+ * [t,SJ,SA,IJ,IA,EQFLAG] = eco_dynamics_function_v3(t_max,a0,g0,c1a,c2a,c1g,c2g,beta0,alpha,betaJ,betaA,hval,f,eqtol,init_pop,strain_totalJ,strain_totalA)
  ***********************************************************************************************************/
 
-/* g0=g, c1a=c1 for adult mortality, c1g=c1 for juvenile trade-off with reproduction */
+/* Compile in Matlab using mex eco_dynamics_function_v3.c */
 
 #include <mex.h>
 #include <math.h>

@@ -1,4 +1,4 @@
-function [resJ_end,resA_end,end_pop,strain_totalJ,strain_totalA,indexJ_end,indexA_end,RESJ,RESA,RESAup,RESAdown,DISPREV,JUVPROP,INFECTEDJUVPROP,NVEC] = simulation_in_steps_function(t_max,a0,g0,c1a,c2a,c1g,c2g,beta0,alpha,resJmin,resJmax,resJ_start,resAmin,resAmax,resA_start,h,f,resJmutationprob,init_pop,strain_totalJ,strain_totalA,indexJ_start,indexA_start,res0,nevol,version)
+function [resJ_end,resA_end,end_pop,strain_totalJ,strain_totalA,indexJ_end,indexA_end,RESJ,RESA,DISPREV,NVEC] = simulation_function(t_max,a0,g0,c1a,c2a,c1g,c2g,beta0,alpha,resJmin,resJmax,resJ_start,resAmin,resAmax,resA_start,h,f,resJmutationprob,init_pop,strain_totalJ,strain_totalA,indexJ_start,indexA_start,res0,nevol,version)
 
 % This function runs an evolutionary simulation for a fixed number of
 % timesteps.
@@ -6,17 +6,12 @@ function [resJ_end,resA_end,end_pop,strain_totalJ,strain_totalA,indexJ_end,index
 eqtol = 1e-3;
 exttol = 1e-5;
 
-% The vectors ResJ and ResA contain all possible values of the evolving
-% traits
+% Set up vectors to be used later:
 ResJ = linspace(resJmin,resJmax,res0);
 ResA = linspace(resAmin,resAmax,res0);
 RESJ = zeros(nevol,res0);
 RESA = zeros(nevol,res0);
-RESAup = zeros(nevol,res0);
-RESAdown = zeros(nevol,res0);
 DISPREV = zeros(nevol,1);
-JUVPROP = zeros(nevol,1);
-INFECTEDJUVPROP = zeros(nevol,1);
 NVEC = zeros(nevol,1);
 
 % Initial conditions:
@@ -30,17 +25,17 @@ for ievol=1:nevol
     
     % Find the ecological equilibrium:
     if version==1
-        [~,SJ1,SA1,IJ1,IA1,~] = plantmodel_function_mex(t_max,a0,g0,c1a,c2a,c1g,c2g,beta0,alpha,resJ_current,resA_current,h,f,eqtol,init_pop,strain_totalJ,strain_totalA);
+        [~,SJ1,SA1,IJ1,IA1,~] = eco_dynamics_function_v1(t_max,a0,g0,c1a,c2a,c1g,c2g,beta0,alpha,resJ_current,resA_current,h,f,eqtol,init_pop,strain_totalJ,strain_totalA);
     elseif version==2
-        [~,SJ1,SA1,IJ1,IA1,~] = plantmodel_function_v2_mex(t_max,a0,g0,c1a,c2a,c1g,c2g,beta0,alpha,resJ_current,resA_current,h,f,eqtol,init_pop,strain_totalJ,strain_totalA);
+        [~,SJ1,SA1,IJ1,IA1,~] = eco_dynamics_function_v2(t_max,a0,g0,c1a,c2a,c1g,c2g,beta0,alpha,resJ_current,resA_current,h,f,eqtol,init_pop,strain_totalJ,strain_totalA);
     elseif version==3
-        [~,SJ1,SA1,IJ1,IA1,~] = plantmodel_function_v3_mex(t_max,a0,g0,c1a,c2a,c1g,c2g,beta0,alpha,resJ_current,resA_current,h,f,eqtol,init_pop,strain_totalJ,strain_totalA);
+        [~,SJ1,SA1,IJ1,IA1,~] = eco_dynamics_function_v3(t_max,a0,g0,c1a,c2a,c1g,c2g,beta0,alpha,resJ_current,resA_current,h,f,eqtol,init_pop,strain_totalJ,strain_totalA);
     elseif version==4
-        [~,SJ1,SA1,IJ1,IA1,~] = plantmodel_function_v4_mex(t_max,a0,g0,c1a,c2a,c1g,c2g,beta0,alpha,resJ_current,resA_current,h,f,eqtol,init_pop,strain_totalJ,strain_totalA);
+        [~,SJ1,SA1,IJ1,IA1,~] = eco_dynamics_function_v4(t_max,a0,g0,c1a,c2a,c1g,c2g,beta0,alpha,resJ_current,resA_current,h,f,eqtol,init_pop,strain_totalJ,strain_totalA);
     elseif version==5
-        [~,SJ1,SA1,IJ1,IA1,~] = plantmodel_function_v5_mex(t_max,a0,g0,c1a,c2a,c1g,c2g,beta0,alpha,resJ_current,resA_current,h,f,eqtol,init_pop,strain_totalJ,strain_totalA);
+        [~,SJ1,SA1,IJ1,IA1,~] = eco_dynamics_function_v5(t_max,a0,g0,c1a,c2a,c1g,c2g,beta0,alpha,resJ_current,resA_current,h,f,eqtol,init_pop,strain_totalJ,strain_totalA);
     elseif version==6
-        [~,SJ1,SA1,IJ1,IA1,~] = plantmodel_function_v6_mex(t_max,a0,g0,c1a,c2a,c1g,c2g,beta0,alpha,resJ_current,resA_current,h,f,eqtol,init_pop,strain_totalJ,strain_totalA);
+        [~,SJ1,SA1,IJ1,IA1,~] = eco_dynamics_function_v6(t_max,a0,g0,c1a,c2a,c1g,c2g,beta0,alpha,resJ_current,resA_current,h,f,eqtol,init_pop,strain_totalJ,strain_totalA);
     end
         
     % Re-format this output into a single matrix:
@@ -56,7 +51,6 @@ for ievol=1:nevol
             IA(j,k) = IA1(end,j+(k-1)*strain_totalJ);
         end
     end
-    
     N = SA+SJ+IA+IJ;
     
     % Remove extinct classes
@@ -94,40 +88,13 @@ for ievol=1:nevol
     Ncolumns=sum(N,1);
     Ntotal=sum(N,'all'); 
     
-    Nup=N;
-    Ndown=N;
-    deletenow=zeros(strain_totalJ,1);
-    deletenow2=zeros(strain_totalJ,1);
-    for i=1:strain_totalJ
-        if indexJ_current(i)<26
-            deletenow(i)=i;
-        end
-        if indexJ_current(i)>25
-            deletenow2(i)=i;
-        end
-    end
-    deletenow=nonzeros(deletenow);
-    deletenow2=nonzeros(deletenow2);
-    Nup(deletenow,:)=[];
-    Ndown(deletenow2,:)=[];
-    
-    Nupcolumns=sum(Nup,1);
-    Nuptotal=sum(Nup,'all');
-    Ndowncolumns=sum(Ndown,1);
-    Ndowntotal=sum(Ndown,'all');
-    
     % Proportion of individuals of each resJ strain
     RESJ(ievol,indexJ_current) = Nrows./Ntotal;
     % Proportion of individuals of each resA strain
     RESA(ievol,indexA_current) = Ncolumns./Ntotal;
-    
-    RESAup(ievol,indexA_current)=Nupcolumns./Nuptotal;
-    RESAdown(ievol,indexA_current)=Ndowncolumns./Ndowntotal;
     % Proportion of individuals who have the disease
     DISPREV(ievol) = (sum(IA,'all')+sum(IJ,'all'))/Ntotal;
-    % Proportion of individuals who are juveniles
-    JUVPROP(ievol) = (sum(SJ,'all')+sum(IJ,'all'))/Ntotal; 
-    INFECTEDJUVPROP(ievol)=sum(IJ,'all')/(sum(IJ,'all')+sum(IA,'all'));
+    % Total population density:
     NVEC(ievol) = Ntotal;
     
     Nvector=zeros(4*strain_totalJ*strain_totalA,1);
@@ -137,13 +104,12 @@ for ievol=1:nevol
         end
     end
     
-    % Mutate juvenile resistance:
+    % If the mutation occurs in the juvenile resistance:
     if (rand<resJmutationprob)
         weightedprob = Nvector/sum(Nvector);
         cumsum1 = cumsum(weightedprob);
         r1 = rand*cumsum1(end);
         mutator_loc = (find(r1<cumsum1,1));
-        
         mutator_locJ=0;
         for j=1:strain_totalJ
             for k=1:strain_totalA
@@ -152,8 +118,6 @@ for ievol=1:nevol
                 end
             end
         end
-       
-        
         mutator = indexJ_current(mutator_locJ);
  
         if(mutator==1) % Mutate up
@@ -169,21 +133,21 @@ for ievol=1:nevol
         end
         if(~ismember(mutant,indexJ_current)) % New strain
             strain_totalJ = strain_totalJ+1;
-            
+            % Update vector of resJ trait values:
             resJ_current_again=NaN(1,length(resJ_current)+1);
             for i=1:length(resJ_current)
                 resJ_current_again(1,i)=resJ_current(i);
             end
             resJ_current_again(1,end)=ResJ(mutant);
             resJ_current=resJ_current_again;
-            
+            % Update vector of resJ trait value indices:
             indexJ_current_again=NaN(1,length(indexJ_current)+1);
             for i=1:length(indexJ_current)
                 indexJ_current_again(1,i)=indexJ_current(i);
             end
             indexJ_current_again(1,end)=mutant;
             indexJ_current=indexJ_current_again;
-            
+            % Add a small population with the new trait value:
             SJ_again=NaN(size(SJ,1)+1,size(SJ,2));
             for i=1:size(SJ,1)
                 for j=1:size(SJ,2)
@@ -192,7 +156,6 @@ for ievol=1:nevol
             end
             SJ_again(end,:)=SJ(mutator_locJ,:)/10;
             SJ=SJ_again;
-            
             SA_again=NaN(size(SA,1)+1,size(SA,2));
             for i=1:size(SA,1)
                 for j=1:size(SA,2)
@@ -201,7 +164,6 @@ for ievol=1:nevol
             end
             SA_again(end,:)=SA(mutator_locJ,:)/10;
             SA=SA_again;
-            
             IJ_again=NaN(size(IJ,1)+1,size(IJ,2));
             for i=1:size(IJ,1)
                 for j=1:size(IJ,2)
@@ -210,7 +172,6 @@ for ievol=1:nevol
             end
             IJ_again(end,:)=IJ(mutator_locJ,:)/10;
             IJ=IJ_again;
-            
             IA_again=NaN(size(IA,1)+1,size(IA,2));
             for i=1:size(IA,1)
                 for j=1:size(IA,2)
@@ -223,13 +184,12 @@ for ievol=1:nevol
         end
     end
     
-    % Mutate adult resistance:
+    % If the mutation occurs in the adult resistance:
     if (rand>resJmutationprob) 
         weightedprob = Nvector/sum(Nvector);
         cumsum1 = cumsum(weightedprob);
         r1 = rand*cumsum1(end);
         mutator_loc = (find(r1<cumsum1,1));
-        
         mutator_locA=0;
         for j=1:strain_totalJ
             for k=1:strain_totalA
@@ -238,7 +198,6 @@ for ievol=1:nevol
                 end
             end
         end
-        
         mutator = indexA_current(mutator_locA);
     
         if(mutator==1) % Mutate up
@@ -254,21 +213,22 @@ for ievol=1:nevol
         end
         if(~ismember(mutant,indexA_current)) % New strain
             strain_totalA = strain_totalA+1;
-        
+            % Update vector of resA trait values:
             resA_current_again=NaN(1,length(resA_current)+1);
             for i=1:length(resA_current)
                 resA_current_again(1,i)=resA_current(i);
             end
             resA_current_again(1,end)=ResA(mutant);
             resA_current=resA_current_again;
-            
+            % Update vectors of resA trait value indices:
             indexA_current_again=NaN(1,length(indexA_current)+1);
             for i=1:length(indexA_current)
                 indexA_current_again(1,i)=indexA_current(i);
             end
             indexA_current_again(1,end)=mutant;
             indexA_current=indexA_current_again;
-            
+            % Add small populations with the new trait value to the
+            % population:
             SJ_again=NaN(size(SJ,1),size(SJ,2)+1);
             for i=1:size(SJ,1)
                 for j=1:size(SJ,2)
@@ -277,7 +237,6 @@ for ievol=1:nevol
             end
             SJ_again(:,end)=SJ(:,mutator_locA)/10;
             SJ=SJ_again;
-            
             SA_again=NaN(size(SA,1),size(SA,2)+1);
             for i=1:size(SA,1)
                 for j=1:size(SA,2)
@@ -286,7 +245,6 @@ for ievol=1:nevol
             end
             SA_again(:,end)=SA(:,mutator_locA)/10;
             SA=SA_again;
-            
             IJ_again=NaN(size(IJ,1),size(IJ,2)+1);
             for i=1:size(IJ,1)
                 for j=1:size(IJ,2)
@@ -295,7 +253,6 @@ for ievol=1:nevol
             end
             IJ_again(:,end)=IJ(:,mutator_locA)/10;
             IJ=IJ_again;
-            
             IA_again=NaN(size(IA,1),size(IA,2)+1);
             for i=1:size(IA,1)
                 for j=1:size(IA,2)

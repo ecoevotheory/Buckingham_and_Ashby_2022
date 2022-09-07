@@ -49,7 +49,8 @@ if finished==0
     elseif sum(isnan(fitgradJval),'all')==SSres^2 % hosts are never viable
         resJss=-10+zeros(1,maxsingstrats);
         resAss=-10+zeros(1,maxsingstrats);
-    % Singular strategies at the corners:
+    % Singular strategies at the corners (both resJ and resA are zero or
+    % one):
     elseif sum(fitgradJval<0,'all')==0 && sum(fitgradAval<0,'all')==0 && resJvalvec(end)==1 && resAvalvec(end)==1
         resJss=[1,-10+zeros(1,maxsingstrats-1)];
         resAss=[1,-10+zeros(1,maxsingstrats-1)];

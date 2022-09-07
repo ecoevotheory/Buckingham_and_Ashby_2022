@@ -1,7 +1,292 @@
-% This code draws a phase plane for the evolution of juvenile and adult 
-% resistance traits.
+% This code draws two phase planes for the evolution of juvenile and adult 
+% resistance traits, one showing a CSS and the other showing bistability.
 
-%% Section 1: Draw the nullclines and fitness gradient directions
+%% Phase Plane A (CSS)
+
+% Section 1: Draw the nullclines and fitness gradient directions
+
+% Define parameters:
+version=5;
+a0=5;
+g0=1;
+c1a=0.5;
+c2a=-3;
+c1g=0.5;
+c2g=-3;
+f=0.1;
+h=1;
+alpha=0;
+beta0=8;
+initvec=[0.1,0.1,0.1,0.1];
+orig_tmax=100;
+SSres=1000;
+panel=1;
+
+% Calculate the fitness gradients at different values of the resistance
+% traits:
+startJ=0;
+startA=0;
+finJ=1;
+finA=1;
+[fitgradJval,fitgradAval,resJvalvec,resAvalvec,~]=fitness_gradients(SSres,startJ,startA,finJ,finA,a0,g0,c1a,c2a,c1g,c2g,beta0,h,alpha,f,initvec,version,orig_tmax);
+
+% Set up vectors:
+resJvec=resJvalvec;
+resAvec=resAvalvec;
+xvec=zeros(length(resJvec)*length(resAvec),1);
+yvec=zeros(length(resJvec)*length(resAvec),1);
+plotter1=zeros(length(resJvec)*length(resAvec),1);
+plotter2=zeros(length(resJvec)*length(resAvec),1);
+xcurveJ=zeros(length(resJvec)*length(resAvec),1);
+ycurveJ=zeros(length(resAvec)*length(resJvec),1);
+xcurveA=zeros(length(resJvec)*length(resAvec),1);
+ycurveA=zeros(length(resAvec)*length(resJvec),1);
+xnanvec=zeros(length(resAvec)*length(resJvec),1);
+ynanvec=zeros(length(resAvec)*length(resJvec),1);
+
+% Convert data into vectors to be plotted. Our phase plane will show the
+% direction but not the magnitude of the fitness gradients (because the
+% magnitudes vary so much that, if we showed the high magnitudes, we would
+% not be able to see the low ones at all).
+for i=1:length(resJvec)
+    for j=1:length(resAvec)
+        xvec(i+length(resJvec)*(j-1))=resJvec(i);
+        yvec(i+length(resJvec)*(j-1))=resAvec(j);
+        plotter1(i+length(resJvec)*(j-1))=fitgradJval(i,j);
+        plotter2(i+length(resJvec)*(j-1))=fitgradAval(i,j);
+        if isnan(fitgradJval(i,j)) && isnan(fitgradAval(i,j))
+            xnanvec(i+length(resJvec)*(j-1))=i;
+            ynanvec(i+length(resJvec)*(j-1))=j;
+        end
+        if j<length(resAvec)
+            if fitgradJval(i,j)>0 && fitgradJval(i,j+1)<=0
+                xcurveJ(i+length(resJvec)*(j-1))=i;
+                ycurveJ(i+length(resJvec)*(j-1))=j;
+            end
+            if fitgradAval(i,j)>0 && fitgradAval(i,j+1)<=0
+                xcurveA(i+length(resJvec)*(j-1))=i;
+                ycurveA(i+length(resJvec)*(j-1))=j;
+            end
+        end
+        if j>1
+            if fitgradJval(i,j)>0 && fitgradJval(i,j-1)<=0
+                xcurveJ(i+length(resJvec)*(j-1))=i;
+                ycurveJ(i+length(resJvec)*(j-1))=j;
+            end
+            if fitgradAval(i,j)>0 && fitgradAval(i,j-1)<=0
+                xcurveA(i+length(resJvec)*(j-1))=i;
+                ycurveA(i+length(resJvec)*(j-1))=j;
+            end
+        end
+        if i<length(resJvec)
+            if fitgradJval(i,j)>0 && fitgradJval(i+1,j)<=0
+                xcurveJ(i+length(resJvec)*(j-1))=i;
+                ycurveJ(i+length(resJvec)*(j-1))=j;
+            end
+            if fitgradAval(i,j)>0 && fitgradAval(i+1,j)<=0
+                xcurveA(i+length(resJvec)*(j-1))=i;
+                ycurveA(i+length(resJvec)*(j-1))=j;
+            end
+        end
+        if i>1
+            if fitgradJval(i,j)>0 && fitgradJval(i-1,j)<=0
+                xcurveJ(i+length(resJvec)*(j-1))=i;
+                ycurveJ(i+length(resJvec)*(j-1))=j;
+            end
+            if fitgradAval(i,j)>0 && fitgradAval(i-1,j)<=0
+                xcurveA(i+length(resJvec)*(j-1))=i;
+                ycurveA(i+length(resJvec)*(j-1))=j;
+            end
+        end
+        
+        if j>1 && i>1
+            if fitgradJval(i,j)>0 && fitgradJval(i-1,j-1)<=0
+                xcurveJ(i+length(resJvec)*(j-1))=i;
+                ycurveJ(i+length(resJvec)*(j-1))=j;
+            end
+            if fitgradAval(i,j)>0 && fitgradAval(i-1,j-1)<=0
+                xcurveA(i+length(resJvec)*(j-1))=i;
+                ycurveA(i+length(resJvec)*(j-1))=j;
+            end
+        end
+        if j<length(resAvec) && i<length(resJvec)
+            if fitgradJval(i,j)>0 && fitgradJval(i+1,j+1)<=0
+                xcurveJ(i+length(resJvec)*(j-1))=i;
+                ycurveJ(i+length(resJvec)*(j-1))=j;
+            end
+            if fitgradAval(i,j)>0 && fitgradAval(i+1,j+1)<=0
+                xcurveA(i+length(resJvec)*(j-1))=i;
+                ycurveA(i+length(resJvec)*(j-1))=j;
+            end
+        end
+        if j<length(resAvec) && i>1
+            if fitgradJval(i,j)>0 && fitgradJval(i-1,j+1)<=0
+                xcurveJ(i+length(resJvec)*(j-1))=i;
+                ycurveJ(i+length(resJvec)*(j-1))=j;
+            end
+            if fitgradAval(i,j)>0 && fitgradAval(i-1,j+1)<=0
+                xcurveA(i+length(resJvec)*(j-1))=i;
+                ycurveA(i+length(resJvec)*(j-1))=j;
+            end
+        end
+        if j>1 && i<length(resJvec)
+            if fitgradJval(i,j)>0 && fitgradJval(i+1,j-1)<=0
+                xcurveJ(i+length(resJvec)*(j-1))=i;
+                ycurveJ(i+length(resJvec)*(j-1))=j;
+            end
+            if fitgradAval(i,j)>0 && fitgradAval(i+1,j-1)<=0
+                xcurveA(i+length(resJvec)*(j-1))=i;
+                ycurveA(i+length(resJvec)*(j-1))=j;
+            end
+        end
+        
+    end
+end
+
+% Scale the fitness gradient directions to be the same length:
+xcurveJ=nonzeros(xcurveJ);
+ycurveJ=nonzeros(ycurveJ);
+xcurveA=nonzeros(xcurveA);
+ycurveA=nonzeros(ycurveA);
+for i=1:length(resJvec)*length(resAvec)
+    scaler=sqrt(plotter1(i)^2 + plotter2(i)^2);
+    if scaler~=0
+        plotter1(i)=plotter1(i)/scaler;
+        plotter2(i)=plotter2(i)/scaler;
+    end  
+end
+
+% Refine the vectors so that an appropriate number of fitness gradients are
+% plotted:
+deletevec=zeros(length(resJvec)*length(resAvec),1);
+for i=1:length(resJvec)
+    for j=1:length(resAvec)
+        if floor((i-(SSres/20))/(SSres/10))~=(i-(SSres/20))/(SSres/10)
+            deletevec(i+length(resJvec)*(j-1))=i+length(resJvec)*(j-1);
+        end
+        if floor((j-(SSres/20))/(SSres/10))~=(j-(SSres/20))/(SSres/10)
+            deletevec(i+length(resJvec)*(j-1))=i+length(resJvec)*(j-1);
+        end
+    end
+end
+deletevec=nonzeros(deletevec);
+xvec(deletevec)=[];
+yvec(deletevec)=[];
+plotter1(deletevec)=[];
+plotter2(deletevec)=[];
+
+
+% Plot the nullclines and fitness gradient directions:
+subplot(1,2,1)
+q=quiver(xvec,yvec,plotter1,plotter2,'color','k');
+q.AutoScaleFactor=0.2;
+xlim([0,1])
+ylim([0,1])
+set(gca,'xtick',0:0.2:1,'xticklabel',resJvec(1):(resJvec(end)-resJvec(1))/5:resJvec(end));
+set(gca,'ytick',0:0.2:1,'yticklabel',resAvec(1):(resAvec(end)-resAvec(1))/5:resAvec(end));
+hold on
+plot(xcurveJ/SSres,ycurveJ/SSres,'o','color','r')
+hold on
+plot(xcurveA/SSres,ycurveA/SSres,'x','color','b')
+ax=gca;
+ax.FontSize=14;
+xlabel('Juvenile resistance, $r_J$','interpreter','latex','fontsize',16)
+ylabel('Adult resistance, $r_A$','interpreter','latex','fontsize',16)
+
+% Plot the singular strategy:
+plot(0.604,0.494,'.','MarkerSize',50,'color',[0.4,0.1,0.5])
+axis square
+
+% Section 2: Plot some trajectories on the phase plane
+
+% Pick a starting point and run a simulation:
+resJstart=0.61;
+resAstart=0.9;
+[trajJ,trajA]=sim_traj_function(resJstart,resAstart,version,a0,g0,c1a,c2a,c1g,c2g,f,h,alpha,beta0,panel);
+hold on
+% Smooth the data and plot the trajectory:
+smooth_trajJ=smoothdata(trajJ,'movmean',30);
+smooth_trajA=smoothdata(trajA,'movmean',30);
+smooth_trajJ=[trajJ(1);smooth_trajJ;trajJ(end)];
+smooth_trajA=[trajA(1);smooth_trajA;trajA(end)];
+plot(smooth_trajJ,smooth_trajA,'linewidth',2,'color',[0.3,0.6,0.3])
+
+% Now choose some more starting points:
+resJstart=1;
+resAstart=0.5;
+[trajJ2,trajA2]=sim_traj_function(resJstart,resAstart,version,a0,g0,c1a,c2a,c1g,c2g,f,h,alpha,beta0,panel);
+hold on
+smooth_trajJ2=smoothdata(trajJ2,'movmean',30);
+smooth_trajA2=smoothdata(trajA2,'movmean',30);
+smooth_trajJ2=[trajJ2(1);smooth_trajJ2;trajJ2(end)];
+smooth_trajA2=[trajA2(1);smooth_trajA2;trajA2(end)];
+plot(smooth_trajJ2,smooth_trajA2,'linewidth',2,'color',[0.3,0.6,0.3])
+
+resJstart=0;
+resAstart=0.2;
+[trajJ3,trajA3]=sim_traj_function(resJstart,resAstart,version,a0,g0,c1a,c2a,c1g,c2g,f,h,alpha,beta0,panel);
+hold on
+smooth_trajJ3=smoothdata(trajJ3,'movmean',30);
+smooth_trajA3=smoothdata(trajA3,'movmean',30);
+smooth_trajJ3=[trajJ3(1);smooth_trajJ3;trajJ3(end)];
+smooth_trajA3=[trajA3(1);smooth_trajA3;trajA3(end)];
+plot(smooth_trajJ3,smooth_trajA3,'linewidth',2,'color',[0.3,0.6,0.3])
+
+resJstart=0.3;
+resAstart=0;
+[trajJ4,trajA4]=sim_traj_function(resJstart,resAstart,version,a0,g0,c1a,c2a,c1g,c2g,f,h,alpha,beta0,panel);
+hold on
+smooth_trajJ4=smoothdata(trajJ4,'movmean',30);
+smooth_trajA4=smoothdata(trajA4,'movmean',30);
+smooth_trajJ4=[trajJ4(1);smooth_trajJ4;trajJ4(end)];
+smooth_trajA4=[trajA4(1);smooth_trajA4;trajA4(end)];
+plot(smooth_trajJ4,smooth_trajA4,'linewidth',2,'color',[0.3,0.6,0.3])
+
+resJstart=1;
+resAstart=0.05;
+[trajJ5,trajA5]=sim_traj_function(resJstart,resAstart,version,a0,g0,c1a,c2a,c1g,c2g,f,h,alpha,beta0,panel);
+hold on
+smooth_trajJ5=smoothdata(trajJ5,'movmean',30);
+smooth_trajA5=smoothdata(trajA5,'movmean',30);
+smooth_trajJ5=[trajJ5(1);smooth_trajJ5;trajJ5(end)];
+smooth_trajA5=[trajA5(1);smooth_trajA5;trajA5(end)];
+plot(smooth_trajJ5,smooth_trajA5,'linewidth',2,'color',[0.3,0.6,0.3])
+
+resJstart=0.3;
+resAstart=1;
+[trajJ6,trajA6]=sim_traj_function(resJstart,resAstart,version,a0,g0,c1a,c2a,c1g,c2g,f,h,alpha,beta0,panel);
+hold on
+smooth_trajJ6=smoothdata(trajJ6,'movmean',30);
+smooth_trajA6=smoothdata(trajA6,'movmean',30);
+smooth_trajJ6=[trajJ6(1);smooth_trajJ6;trajJ6(end)];
+smooth_trajA6=[trajA6(1);smooth_trajA6;trajA6(end)];
+plot(smooth_trajJ6,smooth_trajA6,'linewidth',2,'color',[0.3,0.6,0.3])
+
+resJstart=0.8;
+resAstart=0.8;
+[trajJ7,trajA7]=sim_traj_function(resJstart,resAstart,version,a0,g0,c1a,c2a,c1g,c2g,f,h,alpha,beta0,panel);
+hold on
+smooth_trajJ7=smoothdata(trajJ7,'movmean',30);
+smooth_trajA7=smoothdata(trajA7,'movmean',30);
+smooth_trajJ7=[trajJ7(1);smooth_trajJ7;trajJ7(end)];
+smooth_trajA7=[trajA7(1);smooth_trajA7;trajA7(end)];
+plot(smooth_trajJ7,smooth_trajA7,'linewidth',2,'color',[0.3,0.6,0.3])
+
+% Indicate the starting-points of the trajectories:
+hold on
+plot(smooth_trajJ(1),smooth_trajA(1),'o','markersize',12,'color',[0.3,0.6,0.3],'linewidth',4)
+plot(smooth_trajJ2(1),smooth_trajA2(1),'o','markersize',12,'color',[0.3,0.6,0.3],'linewidth',4)
+plot(smooth_trajJ3(1),smooth_trajA3(1),'o','markersize',12,'color',[0.3,0.6,0.3],'linewidth',4)
+plot(smooth_trajJ4(1),smooth_trajA4(1),'o','markersize',12,'color',[0.3,0.6,0.3],'linewidth',4)
+plot(smooth_trajJ5(1),smooth_trajA5(1),'o','markersize',12,'color',[0.3,0.6,0.3],'linewidth',4)
+plot(smooth_trajJ6(1),smooth_trajA6(1),'o','markersize',12,'color',[0.3,0.6,0.3],'linewidth',4)
+plot(smooth_trajJ7(1),smooth_trajA7(1),'o','markersize',12,'color',[0.3,0.6,0.3],'linewidth',4)
+title('A')
+
+
+%% Phase Plane B (bistability)
+
+% Section 1: Draw the nullclines and fitness gradient directions
 
 % Define parameters:
 version=2;
@@ -19,6 +304,7 @@ initvec=[0.1,0.1,0.1,0.1];
 orig_tmax=100;
 matsize=1;
 SSres=1000;
+panel=2;
 
 % Calculate the fitness gradients at different values of the resistance
 % traits:
@@ -174,7 +460,7 @@ plotter1(deletevec)=[];
 plotter2(deletevec)=[];
 
 
-% Plot the phase plane:
+% Plot the nullclines and fitness gradient directions:
 q=quiver(xvec,yvec,plotter1,plotter2,'color','k');
 q.AutoScaleFactor=0.2;
 xlim([0,1])
@@ -195,7 +481,7 @@ plot(0,0,'.','MarkerSize',50,'color',[0.4,0.1,0.5])
 plot(1,1,'.','MarkerSize',50,'color',[0.4,0.1,0.5])
 axis square
 
-%% Section 2: Plot the boundary of the basin of attraction of each singular strategy
+% Section 2: Plot the boundary of the basin of attraction of each singular strategy
 
 % Stipulate the precision (level of detail) you want:
 lod=7;
@@ -327,7 +613,10 @@ while matsize<2^lod+2
                 resJ=resJvec(n);
         
                 % Run the simulation to determine the end-point of the
-                % trajectory from each starting value:
+                % trajectory from each starting value. Note that this
+                % function assumes that the region below and to the left of
+                % (0.7,0.7) is in one basin of attraction and the region
+                % above and to the right of (0.9,0.9) is in the other.
                 [Jout,Aout]=sim_inout_function(resJ,resA,version,a0,g0,c1a,c2a,c1g,c2g,f,h,alpha,beta0);
                 if Jout<0.7 && Aout<0.7
                     endpoint(m,n)=1;
@@ -387,12 +676,12 @@ grey=[0.6,0.6,0.7];
 plot(smooth_boa_curve,resAvec,'--','color',grey,'linewidth',2)
 
 
-%% Section 3: Plot some trajectories on the phase plane
+% Section 3: Plot some trajectories on the phase plane
 
 % Pick a starting point and run a simulation:
 resJstart=0.1;
 resAstart=1;
-[trajJ,trajA]=sim_traj_function(resJstart,resAstart,version,a0,g0,c1a,c2a,c1g,c2g,f,h,alpha,beta0);
+[trajJ,trajA]=sim_traj_function(resJstart,resAstart,version,a0,g0,c1a,c2a,c1g,c2g,f,h,alpha,beta0,panel);
 hold on
 % Smooth the data and plot the trajectory:
 smooth_trajJ=smoothdata(trajJ,'movmean',100);
@@ -404,7 +693,7 @@ plot(smooth_trajJ,smooth_trajA,'linewidth',2,'color',[0.3,0.6,0.3])
 % Now choose some more starting points:
 resJstart=1;
 resAstart=0.4;
-[trajJ2,trajA2]=sim_traj_function(resJstart,resAstart,version,a0,g0,c1a,c2a,c1g,c2g,f,h,alpha,beta0);
+[trajJ2,trajA2]=sim_traj_function(resJstart,resAstart,version,a0,g0,c1a,c2a,c1g,c2g,f,h,alpha,beta0,panel);
 hold on
 smooth_trajJ2=smoothdata(trajJ2,'movmean',100);
 smooth_trajA2=smoothdata(trajA2,'movmean',100);
@@ -412,7 +701,7 @@ plot(smooth_trajJ2,smooth_trajA2,'linewidth',2,'color',[0.3,0.6,0.3])
 
 resJstart=0.4;
 resAstart=0.8;
-[trajJ3,trajA3]=sim_traj_function(resJstart,resAstart,version,a0,g0,c1a,c2a,c1g,c2g,f,h,alpha,beta0);
+[trajJ3,trajA3]=sim_traj_function(resJstart,resAstart,version,a0,g0,c1a,c2a,c1g,c2g,f,h,alpha,beta0,panel);
 hold on
 smooth_trajJ3=smoothdata(trajJ3,'movmean',100);
 smooth_trajA3=smoothdata(trajA3,'movmean',100);
@@ -420,16 +709,15 @@ plot(smooth_trajJ3,smooth_trajA3,'linewidth',2,'color',[0.3,0.6,0.3])
 
 resJstart=0.8;
 resAstart=0.8;
-[trajJ4,trajA4]=sim_traj_function(resJstart,resAstart,version,a0,g0,c1a,c2a,c1g,c2g,f,h,alpha,beta0);
+[trajJ4,trajA4]=sim_traj_function(resJstart,resAstart,version,a0,g0,c1a,c2a,c1g,c2g,f,h,alpha,beta0,panel);
 hold on
 smooth_trajJ4=smoothdata(trajJ4,'movmean',100);
 smooth_trajA4=smoothdata(trajA4,'movmean',100);
 plot(smooth_trajJ4,smooth_trajA4,'linewidth',2,'color',[0.3,0.6,0.3])
 
-
 resJstart=0.85;
 resAstart=0.82;
-[trajJ5,trajA5]=sim_traj_function(resJstart,resAstart,version,a0,g0,c1a,c2a,c1g,c2g,f,h,alpha,beta0);
+[trajJ5,trajA5]=sim_traj_function(resJstart,resAstart,version,a0,g0,c1a,c2a,c1g,c2g,f,h,alpha,beta0,panel);
 hold on
 smooth_trajJ5=smoothdata(trajJ5,'movmean',100);
 smooth_trajA5=smoothdata(trajA5,'movmean',100);
@@ -437,7 +725,7 @@ plot(smooth_trajJ5,smooth_trajA5,'linewidth',2,'color',[0.3,0.6,0.3])
 
 resJstart=0.7;
 resAstart=0.9;
-[trajJ6,trajA6]=sim_traj_function(resJstart,resAstart,version,a0,g0,c1a,c2a,c1g,c2g,f,h,alpha,beta0);
+[trajJ6,trajA6]=sim_traj_function(resJstart,resAstart,version,a0,g0,c1a,c2a,c1g,c2g,f,h,alpha,beta0,panel);
 hold on
 smooth_trajJ6=smoothdata(trajJ6,'movmean',100);
 smooth_trajA6=smoothdata(trajA6,'movmean',100);
@@ -451,4 +739,4 @@ plot(smooth_trajJ3(1),smooth_trajA3(1),'o','markersize',12,'color',[0.3,0.6,0.3]
 plot(smooth_trajJ4(1),smooth_trajA4(1),'o','markersize',12,'color',[0.3,0.6,0.3],'linewidth',4)
 plot(smooth_trajJ5(1),smooth_trajA5(1),'o','markersize',12,'color',[0.3,0.6,0.3],'linewidth',4)
 plot(smooth_trajJ6(1),smooth_trajA6(1),'o','markersize',12,'color',[0.3,0.6,0.3],'linewidth',4)
-
+title('B')
